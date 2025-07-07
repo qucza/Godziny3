@@ -1,0 +1,860 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ewidencja godzin pracy</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', system-ui, -apple-system, sans-serif;
+            background: #f8fafc;
+            min-height: 100vh;
+        }
+        
+        .modern-card {
+            background: white;
+            border: 1px solid #e2e8f0;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+        }
+        
+        .floating-card {
+            transform: translateY(0);
+            transition: all 0.3s ease;
+        }
+        
+        .floating-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+        }
+        
+        .primary-button {
+            background: #3b82f6;
+            color: white;
+            border: none;
+            transition: all 0.3s ease;
+            font-weight: 500;
+        }
+        
+        .primary-button:hover {
+            background: #2563eb;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+        }
+        
+        .success-button {
+            background: #10b981;
+            color: white;
+        }
+        
+        .success-button:hover {
+            background: #059669;
+            box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+        }
+        
+        .purple-button {
+            background: #7c3aed;
+            color: white;
+        }
+        
+        .purple-button:hover {
+            background: #6d28d9;
+        }
+        
+        .orange-button {
+            background: #ea580c;
+            color: white;
+        }
+        
+        .orange-button:hover {
+            background: #dc2626;
+        }
+        
+        .teal-button {
+            background: #0d9488;
+            color: white;
+        }
+        
+        .teal-button:hover {
+            background: #0f766e;
+        }
+        
+        .modern-input {
+            border: 2px solid #e5e7eb;
+            transition: all 0.3s ease;
+            background: white;
+        }
+        
+        .modern-input:focus {
+            border-color: #3b82f6;
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+            outline: none;
+        }
+        
+        .stats-card {
+            background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
+            color: white;
+        }
+        
+        .time-badge {
+            background: #3b82f6;
+            color: white;
+            font-weight: 600;
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 0.875rem;
+        }
+        
+        .project-badge {
+            background: #dbeafe;
+            color: #1e40af;
+            padding: 4px 12px;
+            border-radius: 16px;
+            font-size: 0.875rem;
+            font-weight: 500;
+        }
+        
+        .employee-badge {
+            background: #f3e8ff;
+            color: #7c3aed;
+            padding: 4px 12px;
+            border-radius: 16px;
+            font-size: 0.875rem;
+            font-weight: 500;
+        }
+        
+        .location-badge {
+            background: #e6fffa;
+            color: #0d9488;
+            padding: 4px 12px;
+            border-radius: 16px;
+            font-size: 0.875rem;
+            font-weight: 500;
+        }
+        
+        .selected-employee {
+            background: #3b82f6;
+            color: white;
+        }
+        
+        .employee-button {
+            background: #f3f4f6;
+            color: #374151;
+            transition: all 0.3s ease;
+        }
+        
+        .employee-button:hover {
+            background: #e5e7eb;
+        }
+        
+        .hidden {
+            display: none;
+        }
+        
+        .icon {
+            width: 16px;
+            height: 16px;
+            display: inline-block;
+            stroke: currentColor;
+            fill: none;
+            stroke-width: 2;
+        }
+        
+        .icon-lg {
+            width: 24px;
+            height: 24px;
+        }
+        
+        .animate-fade-in {
+            animation: fadeIn 0.5s ease-out;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+    </style>
+</head>
+<body>
+    <div class="min-h-screen p-4">
+        <div class="max-w-6xl mx-auto">
+            <!-- Header -->
+            <div class="modern-card floating-card rounded-2xl p-8 mb-8 animate-fade-in">
+                <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-8 gap-4">
+                    <div class="flex items-center gap-4">
+                        <div class="w-12 h-12 rounded-xl bg-blue-600 flex items-center justify-center text-white">
+                            <svg class="icon-lg" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                                <circle cx="12" cy="12" r="10"></circle>
+                                <polyline points="12,6 12,12 16,14"></polyline>
+                            </svg>
+                        </div>
+                        <div>
+                            <h1 class="text-3xl font-bold text-gray-800">Ewidencja godzin pracy</h1>
+                            <p class="text-gray-600 text-sm" id="subtitle">Śledź swój czas pracy profesjonalnie</p>
+                        </div>
+                    </div>
+                    <div class="flex flex-wrap gap-3" id="header-buttons">
+                        <button onclick="toggleViewMode()" class="purple-button px-4 py-2 rounded-xl flex items-center gap-2 font-medium transition-colors">
+                            <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                                <line x1="12" y1="20" x2="12" y2="10"></line>
+                                <line x1="18" y1="20" x2="18" y2="4"></line>
+                                <line x1="6" y1="20" x2="6" y2="16"></line>
+                            </svg>
+                            <span id="view-mode-text">Podsumowanie</span>
+                        </button>
+                        <button onclick="showAddEmployeeForm()" class="orange-button px-4 py-2 rounded-xl flex items-center gap-2 font-medium transition-colors" id="add-employee-btn">
+                            <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                                <line x1="12" y1="5" x2="12" y2="19"></line>
+                                <line x1="5" y1="12" x2="19" y2="12"></line>
+                            </svg>
+                            Pracownik
+                        </button>
+                        <button onclick="showAddEntryForm()" class="primary-button px-6 py-3 rounded-xl flex items-center gap-2 font-medium shadow-lg" id="add-entry-btn">
+                            <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                                <line x1="12" y1="5" x2="12" y2="19"></line>
+                                <line x1="5" y1="12" x2="19" y2="12"></line>
+                            </svg>
+                            Dodaj wpis
+                        </button>
+                        <button onclick="exportToCSV()" class="success-button px-6 py-3 rounded-xl flex items-center gap-2 font-medium shadow-lg" id="export-btn">
+                            <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                                <polyline points="7,10 12,15 17,10"></polyline>
+                                <line x1="12" y1="15" x2="12" y2="3"></line>
+                            </svg>
+                            Eksportuj CSV
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Employee Selection -->
+            <div class="modern-card rounded-2xl p-6 mb-6" id="employee-selection">
+                <h3 class="text-lg font-semibold mb-4 flex items-center gap-2">
+                    <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                        <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+                        <circle cx="9" cy="7" r="4"></circle>
+                        <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+                        <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+                    </svg>
+                    Wybierz pracownika
+                </h3>
+                <div class="flex flex-wrap gap-2" id="employee-buttons">
+                    <!-- Dynamically generated employee buttons -->
+                </div>
+            </div>
+
+            <!-- Add Employee Form -->
+            <div class="modern-card rounded-2xl p-6 mb-6 hidden" id="add-employee-form">
+                <h3 class="text-lg font-semibold mb-4">Dodaj nowego pracownika</h3>
+                <div class="flex gap-3">
+                    <input type="text" id="new-employee-name" placeholder="Imię i nazwisko" class="modern-input flex-1 px-4 py-2 rounded-xl">
+                    <button onclick="addEmployee()" class="primary-button px-6 py-2 rounded-xl font-medium">Dodaj</button>
+                    <button onclick="hideAddEmployeeForm()" class="bg-gray-500 hover:bg-gray-600 text-white px-4 py-2 rounded-xl">Anuluj</button>
+                </div>
+            </div>
+
+            <!-- Add Location Form -->
+            <div class="modern-card rounded-2xl p-6 mb-6 hidden" id="add-location-form">
+                <h3 class="text-lg font-semibold mb-4 flex items-center gap-2">
+                    <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                        <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path>
+                        <circle cx="12" cy="10" r="3"></circle>
+                    </svg>
+                    Dodaj nową lokalizację (max 3)
+                </h3>
+                <div class="flex gap-3">
+                    <input type="text" id="new-location-name" placeholder="Nazwa lokalizacji" class="modern-input flex-1 px-4 py-2 rounded-xl">
+                    <button onclick="addLocation()" class="primary-button px-6 py-2 rounded-xl font-medium">Dodaj</button>
+                    <button onclick="hideAddLocationForm()" class="bg-gray-500 hover:bg-gray-600 text-white px-4 py-2 rounded-xl">Anuluj</button>
+                </div>
+                <div class="mt-4">
+                    <p class="text-sm text-gray-600 mb-2">Aktualne lokalizacje:</p>
+                    <div class="flex flex-wrap gap-2" id="current-locations">
+                        <!-- Current locations will be rendered here -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- Stats Card -->
+            <div class="stats-card rounded-2xl p-6 mb-8 animate-fade-in" id="stats-card">
+                <!-- Stats content will be dynamically generated -->
+            </div>
+
+            <!-- Add Entry Form -->
+            <div class="modern-card floating-card rounded-2xl p-8 mb-8 animate-fade-in hidden" id="add-entry-form">
+                <div class="flex items-center gap-3 mb-6">
+                    <div class="w-12 h-12 rounded-xl bg-blue-600 flex items-center justify-center text-white">
+                        <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                            <line x1="12" y1="5" x2="12" y2="19"></line>
+                            <line x1="5" y1="12" x2="19" y2="12"></line>
+                        </svg>
+                    </div>
+                    <h2 class="text-2xl font-bold text-gray-800" id="form-title">Dodaj nowy wpis</h2>
+                </div>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                        <label class="block text-sm font-semibold text-gray-700 mb-2">Data</label>
+                        <input type="date" id="entry-date" class="modern-input w-full px-4 py-3 rounded-xl">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-semibold text-gray-700 mb-2">Lokalizacja</label>
+                        <select id="entry-location" class="modern-input w-full px-4 py-3 rounded-xl">
+                            <!-- Options will be dynamically populated -->
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-semibold text-gray-700 mb-2">Godzina rozpoczęcia</label>
+                        <input type="time" id="entry-start" class="modern-input w-full px-4 py-3 rounded-xl">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-semibold text-gray-700 mb-2">Godzina zakończenia</label>
+                        <input type="time" id="entry-end" class="modern-input w-full px-4 py-3 rounded-xl">
+                    </div>
+                    <div class="md:col-span-2">
+                        <label class="block text-sm font-semibold text-gray-700 mb-2">Projekt</label>
+                        <input type="text" id="entry-project" placeholder="Nazwa projektu" class="modern-input w-full px-4 py-3 rounded-xl">
+                    </div>
+                    <div class="md:col-span-2">
+                        <label class="block text-sm font-semibold text-gray-700 mb-2">Opis (opcjonalnie)</label>
+                        <textarea id="entry-description" rows="4" placeholder="Opisz wykonaną pracę..." class="modern-input w-full px-4 py-3 rounded-xl resize-none"></textarea>
+                    </div>
+                    <div class="md:col-span-2 flex flex-wrap gap-3 pt-4">
+                        <button onclick="saveEntry()" class="primary-button px-8 py-3 rounded-xl font-semibold shadow-lg flex-1 min-w-32" id="save-btn">
+                            Dodaj wpis
+                        </button>
+                        <button onclick="hideAddEntryForm()" class="bg-gray-500 hover:bg-gray-600 text-white px-8 py-3 rounded-xl font-semibold transition-all duration-300 flex-1 min-w-32">
+                            Anuluj
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Entries List -->
+            <div class="space-y-6" id="entries-list">
+                <!-- Entries will be dynamically generated -->
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Global variables
+        let entries = [];
+        let employees = ['Ja'];
+        let selectedEmployee = 'Ja';
+        let viewMode = 'individual'; // 'individual' or 'summary'
+        let editingEntry = null;
+        let isAdminMode = false;
+        let currentEmployeeCode = null;
+
+        // Employee codes mapping
+        const employeeCodes = {
+            'Ja': 'admin',
+            // Będą dodawane dynamicznie dla nowych pracowników
+        };
+
+        // Initialize app
+        window.addEventListener('load', function() {
+            checkAccessCode();
+            loadData();
+            renderApp();
+        });
+
+        // Check URL for employee access code
+        function checkAccessCode() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const code = urlParams.get('code');
+            
+            if (code) {
+                // Find employee by code
+                const employee = Object.keys(employeeCodes).find(emp => employeeCodes[emp] === code);
+                if (employee) {
+                    selectedEmployee = employee;
+                    currentEmployeeCode = code;
+                    isAdminMode = (code === 'admin');
+                    
+                    // Lock view mode for non-admin users
+                    if (!isAdminMode) {
+                        viewMode = 'individual';
+                    }
+                } else {
+                    // Invalid code
+                    alert('Nieprawidłowy kod dostępu!');
+                    window.location.href = window.location.href.split('?')[0]; // Remove params
+                }
+            } else {
+                // No code = admin mode
+                isAdminMode = true;
+                currentEmployeeCode = 'admin';
+            }
+        }
+
+        // Generate unique code for employee
+        function generateEmployeeCode(employeeName) {
+            const base = employeeName.toLowerCase().replace(/[^a-z0-9]/g, '');
+            const random = Math.random().toString(36).substr(2, 4);
+            return base + random;
+        }
+
+        // Get employee access URL
+        function getEmployeeAccessURL(employeeName) {
+            const code = employeeCodes[employeeName];
+            if (code) {
+                return window.location.href.split('?')[0] + '?code=' + code;
+            }
+            return null;
+        }
+
+        // Data management
+        function loadData() {
+            const savedEntries = localStorage.getItem('timesheet-entries');
+            const savedEmployees = localStorage.getItem('timesheet-employees');
+            const savedCodes = localStorage.getItem('employee-codes');
+            
+            if (savedEntries) {
+                entries = JSON.parse(savedEntries);
+            }
+            if (savedEmployees) {
+                employees = JSON.parse(savedEmployees);
+            }
+            if (savedCodes) {
+                Object.assign(employeeCodes, JSON.parse(savedCodes));
+            }
+            
+            // Don't change selectedEmployee if we're in employee mode
+            if (isAdminMode) {
+                const savedSelectedEmployee = localStorage.getItem('selected-employee');
+                if (savedSelectedEmployee) {
+                    selectedEmployee = savedSelectedEmployee;
+                }
+            }
+        }
+
+        function saveData() {
+            localStorage.setItem('timesheet-entries', JSON.stringify(entries));
+            localStorage.setItem('timesheet-employees', JSON.stringify(employees));
+            localStorage.setItem('employee-codes', JSON.stringify(employeeCodes));
+            
+            if (isAdminMode) {
+                localStorage.setItem('selected-employee', selectedEmployee);
+            }
+        }
+
+        // Utility functions
+        function calculateHours(startTime, endTime) {
+            const start = new Date(`2000-01-01T${startTime}`);
+            const end = new Date(`2000-01-01T${endTime}`);
+            const diffMs = end - start;
+            const diffHours = diffMs / (1000 * 60 * 60);
+            return Math.max(0, diffHours);
+        }
+
+        function formatDate(dateString) {
+            const date = new Date(dateString);
+            return date.toLocaleDateString('pl-PL', { 
+                weekday: 'long', 
+                year: 'numeric', 
+                month: 'long', 
+                day: 'numeric' 
+            });
+        }
+
+        // Employee management (admin only)
+        function addEmployee() {
+            if (!isAdminMode) return;
+            
+            const name = document.getElementById('new-employee-name').value.trim();
+            if (name && !employees.includes(name)) {
+                employees.push(name);
+                employeeCodes[name] = generateEmployeeCode(name);
+                saveData();
+                renderApp();
+                hideAddEmployeeForm();
+                
+                // Show access URL
+                const accessURL = getEmployeeAccessURL(name);
+                alert(`Pracownik dodany!\nLink dostępu dla ${name}:\n${accessURL}`);
+            }
+        }
+
+        function removeEmployee(employeeName) {
+            if (!isAdminMode || employeeName === 'Ja') return;
+            
+            if (employees.length > 1) {
+                if (confirm(`Czy na pewno chcesz usunąć pracownika: ${employeeName}?`)) {
+                    employees = employees.filter(emp => emp !== employeeName);
+                    entries = entries.filter(entry => entry.employee !== employeeName);
+                    delete employeeCodes[employeeName];
+                    
+                    if (selectedEmployee === employeeName) {
+                        selectedEmployee = 'Ja';
+                    }
+                    saveData();
+                    renderApp();
+                }
+            }
+        }
+
+        function selectEmployee(employeeName) {
+            if (!isAdminMode) return; // Only admin can switch employees
+            
+            selectedEmployee = employeeName;
+            saveData();
+            renderApp();
+        }
+
+        function showEmployeeLink(employeeName) {
+            const accessURL = getEmployeeAccessURL(employeeName);
+            if (accessURL) {
+                const message = `Link dostępu dla ${employeeName}:\n${accessURL}\n\nTen link można wysłać pracownikowi - będzie miał dostęp tylko do swoich danych.`;
+                if (navigator.clipboard) {
+                    navigator.clipboard.writeText(accessURL).then(() => {
+                        alert(message + '\n\nLink skopiowany do schowka!');
+                    });
+                } else {
+                    alert(message);
+                }
+            }
+        }
+
+        // Entry management
+        function saveEntry() {
+            const date = document.getElementById('entry-date').value;
+            const startTime = document.getElementById('entry-start').value;
+            const endTime = document.getElementById('entry-end').value;
+            const project = document.getElementById('entry-project').value;
+            const description = document.getElementById('entry-description').value;
+
+            if (!date || !startTime || !endTime) {
+                alert('Proszę wypełnić wszystkie wymagane pola');
+                return;
+            }
+
+            const hours = calculateHours(startTime, endTime);
+            const entry = {
+                id: editingEntry ? editingEntry.id : Date.now(),
+                date,
+                startTime,
+                endTime,
+                project,
+                description,
+                employee: selectedEmployee,
+                hours: parseFloat(hours.toFixed(2))
+            };
+
+            if (editingEntry) {
+                const index = entries.findIndex(e => e.id === editingEntry.id);
+                entries[index] = entry;
+                editingEntry = null;
+            } else {
+                entries.push(entry);
+            }
+
+            saveData();
+            renderApp();
+            hideAddEntryForm();
+        }
+
+        function editEntry(entryId) {
+            const entry = entries.find(e => e.id === entryId);
+            if (entry && (isAdminMode || entry.employee === selectedEmployee)) {
+                editingEntry = entry;
+                document.getElementById('entry-date').value = entry.date;
+                document.getElementById('entry-start').value = entry.startTime;
+                document.getElementById('entry-end').value = entry.endTime;
+                document.getElementById('entry-project').value = entry.project;
+                document.getElementById('entry-description').value = entry.description;
+                document.getElementById('form-title').textContent = 'Edytuj wpis';
+                document.getElementById('save-btn').textContent = 'Zapisz zmiany';
+                document.getElementById('add-entry-form').classList.remove('hidden');
+            }
+        }
+
+        function deleteEntry(entryId) {
+            const entry = entries.find(e => e.id === entryId);
+            if (entry && (isAdminMode || entry.employee === selectedEmployee)) {
+                if (confirm('Czy na pewno chcesz usunąć ten wpis?')) {
+                    entries = entries.filter(e => e.id !== entryId);
+                    saveData();
+                    renderApp();
+                }
+            }
+        }
+
+        // UI management
+        function toggleViewMode() {
+            if (!isAdminMode) return; // Only admin can change view mode
+            
+            viewMode = viewMode === 'individual' ? 'summary' : 'individual';
+            renderApp();
+        }
+
+        function showAddEmployeeForm() {
+            if (!isAdminMode) return;
+            
+            document.getElementById('add-employee-form').classList.remove('hidden');
+            document.getElementById('new-employee-name').value = '';
+        }
+
+        function hideAddEmployeeForm() {
+            document.getElementById('add-employee-form').classList.add('hidden');
+        }
+
+        function showAddEntryForm() {
+            editingEntry = null;
+            document.getElementById('form-title').textContent = 'Dodaj nowy wpis';
+            document.getElementById('save-btn').textContent = 'Dodaj wpis';
+            document.getElementById('entry-date').value = '';
+            document.getElementById('entry-start').value = '';
+            document.getElementById('entry-end').value = '';
+            document.getElementById('entry-project').value = '';
+            document.getElementById('entry-description').value = '';
+            document.getElementById('add-entry-form').classList.remove('hidden');
+        }
+
+        function hideAddEntryForm() {
+            document.getElementById('add-entry-form').classList.add('hidden');
+            editingEntry = null;
+        }
+
+        // Export functionality
+        function exportToCSV() {
+            const exportEntries = (isAdminMode && viewMode === 'summary') ? entries : entries.filter(e => e.employee === selectedEmployee);
+            const headers = ['Pracownik', 'Data', 'Godzina rozpoczęcia', 'Godzina zakończenia', 'Przepracowane godziny', 'Projekt', 'Opis'];
+            const csvData = exportEntries.map(entry => [
+                entry.employee,
+                entry.date,
+                entry.startTime,
+                entry.endTime,
+                entry.hours,
+                entry.project || '',
+                entry.description || ''
+            ]);
+
+            const csvContent = [headers, ...csvData]
+                .map(row => row.map(cell => `"${cell}"`).join(','))
+                .join('\n');
+
+            const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+            const link = document.createElement('a');
+            link.href = URL.createObjectURL(blob);
+            const filename = (isAdminMode && viewMode === 'summary') ? 'wszyscy_pracownicy' : selectedEmployee.toLowerCase().replace(' ', '_');
+            link.download = `godziny_pracy_${filename}_${new Date().toISOString().split('T')[0]}.csv`;
+            link.click();
+        }
+
+        // Render functions
+        function renderApp() {
+            renderHeader();
+            renderEmployeeSelection();
+            renderStats();
+            renderEntries();
+        }
+
+        function renderHeader() {
+            const subtitle = document.getElementById('subtitle');
+            const viewModeText = document.getElementById('view-mode-text');
+            const addEmployeeBtn = document.getElementById('add-employee-btn');
+            const addEntryBtn = document.getElementById('add-entry-btn');
+            const viewModeBtn = addEmployeeBtn.previousElementSibling;
+
+            if (isAdminMode) {
+                if (viewMode === 'summary') {
+                    subtitle.textContent = 'Podsumowanie wszystkich pracowników';
+                    viewModeText.textContent = 'Indywidualny';
+                    addEmployeeBtn.classList.add('hidden');
+                    addEntryBtn.classList.add('hidden');
+                } else {
+                    subtitle.textContent = `Pracownik: ${selectedEmployee}`;
+                    viewModeText.textContent = 'Podsumowanie';
+                    addEmployeeBtn.classList.remove('hidden');
+                    addEntryBtn.classList.remove('hidden');
+                }
+                viewModeBtn.classList.remove('hidden');
+            } else {
+                // Employee mode
+                subtitle.textContent = `Witaj ${selectedEmployee}! Twoje godziny pracy`;
+                viewModeBtn.classList.add('hidden');
+                addEmployeeBtn.classList.add('hidden');
+                addEntryBtn.classList.remove('hidden');
+            }
+        }
+
+        function renderEmployeeSelection() {
+            const employeeSelection = document.getElementById('employee-selection');
+            const employeeButtons = document.getElementById('employee-buttons');
+
+            if (isAdminMode && viewMode === 'individual' && employees.length > 1) {
+                employeeSelection.classList.remove('hidden');
+                employeeButtons.innerHTML = employees.map(emp => {
+                    const removeButton = emp !== 'Ja' ? `<span onclick="event.stopPropagation(); removeEmployee('${emp}')" class="ml-2 text-red-500 hover:text-red-700 cursor-pointer">×</span>` : '';
+                    const linkButton = emp !== 'Ja' ? `<span onclick="event.stopPropagation(); showEmployeeLink('${emp}')" class="ml-2 text-blue-500 hover:text-blue-700 cursor-pointer" title="Pokaż link dostępu">🔗</span>` : '';
+                    return `
+                        <button onclick="selectEmployee('${emp}')" class="px-4 py-2 rounded-xl font-medium transition-colors ${
+                            selectedEmployee === emp ? 'selected-employee' : 'employee-button'
+                        }">
+                            ${emp}
+                            ${linkButton}
+                            ${removeButton}
+                        </button>
+                    `;
+                }).join('');
+            } else {
+                employeeSelection.classList.add('hidden');
+            }
+        }
+
+        function renderStats() {
+            const statsCard = document.getElementById('stats-card');
+            
+            if (isAdminMode && viewMode === 'summary') {
+                const employeeSummary = employees.map(emp => ({
+                    name: emp,
+                    totalHours: entries.filter(e => e.employee === emp).reduce((sum, entry) => sum + entry.hours, 0),
+                    entriesCount: entries.filter(e => e.employee === emp).length
+                }));
+
+                const totalHours = entries.reduce((sum, entry) => sum + entry.hours, 0);
+
+                statsCard.innerHTML = `
+                    <h3 class="text-white/80 text-lg font-medium mb-4">Podsumowanie wszystkich pracowników</h3>
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                        ${employeeSummary.map(emp => `
+                            <div class="bg-white/20 rounded-xl p-4">
+                                <div class="flex items-center justify-between">
+                                    <div>
+                                        <p class="text-white font-semibold">${emp.name}</p>
+                                        <p class="text-white/80 text-sm">${emp.entriesCount} wpisów</p>
+                                    </div>
+                                    <div class="text-right">
+                                        <p class="text-2xl font-bold text-white">${emp.totalHours.toFixed(1)}h</p>
+                                    </div>
+                                </div>
+                            </div>
+                        `).join('')}
+                    </div>
+                    <div class="mt-4 pt-4 border-t border-white/20">
+                        <p class="text-white/80 text-sm">Łącznie wszystkich godzin</p>
+                        <p class="text-3xl font-bold text-white">${totalHours.toFixed(1)} godzin</p>
+                    </div>
+                `;
+            } else {
+                const currentViewHours = entries.filter(e => e.employee === selectedEmployee).reduce((sum, entry) => sum + entry.hours, 0);
+                const entriesCount = entries.filter(e => e.employee === selectedEmployee).length;
+                
+                statsCard.innerHTML = `
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <p class="text-white/80 text-sm font-medium">${isAdminMode ? 'Czas pracy - ' + selectedEmployee : 'Twoje godziny pracy'}</p>
+                            <p class="text-3xl font-bold text-white">${currentViewHours.toFixed(2)} godzin</p>
+                            <p class="text-white/80 text-sm">${entriesCount} wpisów</p>
+                        </div>
+                        <div class="w-16 h-16 rounded-2xl bg-white/20 flex items-center justify-center">
+                            <svg class="w-8 h-8 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                                <circle cx="12" cy="12" r="10"></circle>
+                                <polyline points="12,6 12,12 16,14"></polyline>
+                            </svg>
+                        </div>
+                    </div>
+                `;
+            }
+        }
+
+        function renderEntries() {
+            const entriesList = document.getElementById('entries-list');
+            const filteredEntries = viewMode === 'summary' ? entries : entries.filter(e => e.employee === selectedEmployee);
+            
+            if (filteredEntries.length === 0) {
+                entriesList.innerHTML = `
+                    <div class="modern-card rounded-2xl p-12 text-center">
+                        <div class="w-20 h-20 mx-auto mb-6 rounded-2xl bg-gradient-to-br from-gray-100 to-gray-200 flex items-center justify-center">
+                            <svg class="w-10 h-10 text-gray-400" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                                <polyline points="14,2 14,8 20,8"></polyline>
+                                <line x1="16" y1="13" x2="8" y2="13"></line>
+                                <line x1="16" y1="17" x2="8" y2="17"></line>
+                                <polyline points="10,9 9,9 8,9"></polyline>
+                            </svg>
+                        </div>
+                        <h3 class="text-xl font-semibold text-gray-700 mb-2">Brak wpisów</h3>
+                        <p class="text-gray-500">${viewMode === 'summary' ? 'Brak danych do wyświetlenia' : 'Brak wpisów dla pracownika: ' + selectedEmployee}</p>
+                    </div>
+                `;
+            } else {
+                const sortedEntries = filteredEntries.sort((a, b) => new Date(b.date) - new Date(a.date));
+                entriesList.innerHTML = sortedEntries.map(entry => {
+                    const employeeSection = viewMode === 'summary' ? `
+                        <div class="flex items-center gap-2">
+                            <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                                <circle cx="12" cy="7" r="4"></circle>
+                            </svg>
+                            <span class="employee-badge">${entry.employee}</span>
+                        </div>
+                    ` : '';
+                    
+                    const projectSection = entry.project ? `
+                        <div class="mb-2">
+                            <span class="project-badge">${entry.project}</span>
+                        </div>
+                    ` : '';
+                    
+                    const descriptionSection = entry.description ? `
+                        <p class="text-gray-600 text-sm leading-relaxed">${entry.description}</p>
+                    ` : '';
+                    
+                    const actionButtons = viewMode === 'individual' ? `
+                        <div class="flex gap-2">
+                            <button onclick="editEntry(${entry.id})" class="w-10 h-10 flex items-center justify-center bg-blue-50 text-blue-600 hover:bg-blue-100 rounded-xl transition-all duration-300 hover:scale-105">
+                                <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                                    <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
+                                    <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
+                                </svg>
+                            </button>
+                            <button onclick="deleteEntry(${entry.id})" class="w-10 h-10 flex items-center justify-center bg-red-50 text-red-600 hover:bg-red-100 rounded-xl transition-all duration-300 hover:scale-105">
+                                <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                                    <polyline points="3,6 5,6 21,6"></polyline>
+                                    <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+                                </svg>
+                            </button>
+                        </div>
+                    ` : '';
+                    
+                    return `
+                        <div class="modern-card floating-card rounded-2xl p-6 animate-fade-in">
+                            <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
+                                <div class="flex-1">
+                                    <div class="flex flex-wrap items-center gap-3 mb-3">
+                                        ${employeeSection}
+                                        <div class="flex items-center gap-2 text-sm font-semibold text-gray-700">
+                                            <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                                                <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+                                                <line x1="16" y1="2" x2="16" y2="6"></line>
+                                                <line x1="8" y1="2" x2="8" y2="6"></line>
+                                                <line x1="3" y1="10" x2="21" y2="10"></line>
+                                            </svg>
+                                            ${formatDate(entry.date)}
+                                        </div>
+                                        <div class="flex items-center gap-2 text-sm text-gray-600">
+                                            <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                                                <circle cx="12" cy="12" r="10"></circle>
+                                                <polyline points="12,6 12,12 16,14"></polyline>
+                                            </svg>
+                                            ${entry.startTime} - ${entry.endTime}
+                                        </div>
+                                        <span class="time-badge">${entry.hours}h</span>
+                                    </div>
+                                    ${projectSection}
+                                    ${descriptionSection}
+                                </div>
+                                ${actionButtons}
+                            </div>
+                        </div>
+                    `;
+                }).join('');
+            }
+        }
+    </script>
+</body>
+</html>
